@@ -11,18 +11,14 @@
 #define ADS_RDY_PIN   22 // ADS1256 data ready
 #define ADS_CS_PIN    21 // ADS1256 chip select
 
-double resolution = 8388608.; // max ADC output = 2^23-1
+#define SAMPLES 25               // how many readings for stats calc
+#define COUNTSPERVOLT (1658385)  // nominally (2^22 / 2.50 V) but that is not exact
 
-//this needs to match the setting in the ADC init function in the library tab
-// double Gain = 64.; // be sure to have a period 
-// double vRef = 5.0; // reference voltage
 double tDrift = 0.0;  // total drift since first reading
 
-const int LED1 = 13;         // both SPI clock and Arduino LED
+const int LED1 = 13;         // this pin both SPI clock and Arduino LED
 float firstRead = 0.00;      // store first (averaged) ADC reading
-bool startflag = true;       // if we are doing the first reading
-// =========================================================================
-
+bool startflag = true;       // are we doing the first reading?
 
 // =========================================================================
 void setup() {
@@ -47,42 +43,37 @@ void setup() {
   SPI.begin();
   Serial.println("V, stdev_uV, pk_uV, drift_uV");
 
-  initADS();
+  initADS();  // sets input channel, sample rate, PGA gain, buffer, etc.
 }
 
-#define SAMPLES 25
-#define COUNTSPERVOLT (1658385)  // nominal (2^22 / 2.50 V)
-#define NDLIM
-
+// ------------------------------------------------------------------------------
 void loop() {
 
-  //int32_t raw;
-
-  double sMax,sMin;
+  double sMax,sMin;  // max and min values for peak-to-peak amplitude
   long n;            // count of how many readings so far
-  double x,datSum,mean,delta,sumsq,m2,variance,stdev;  // to calculate standard deviation
+  double x,datSum,mean,delta,m2,variance,stdev;  // to calculate standard deviation
 
   sMax = -8388608 / (double) COUNTSPERVOLT;  // ADC range is +/- 2E23 = 8388608
   sMin = 8388608 / (double) COUNTSPERVOLT;
 
   datSum = 0;   // sum of readings
   n = 0;     // have not made any ADC readings yet
-  mean = 0; // start off with running mean at zero
-  m2 = 0;      
+  mean = 0;  // start off with running mean at zero
+  m2 = 0;    // incremental variance accumulator  
 
   for (int i=0;i<SAMPLES; i++) {
         x = ((double) read_Value()) / COUNTSPERVOLT;  // returns signed 32-bit int from 24 bit ADC
-        // Serial.println(x,0);  // DEBUG
         datSum += x;  // scaled to volts;
         if (x > sMax) sMax = x;
         if (x < sMin) sMin = x;
+        
               // from http://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
         n++;
         delta = x - mean;
         mean += delta/n;
         m2 += (delta * (x - mean));
   } 
-  variance = m2/(n-1);  // (n-1):Sample Variance  (n): Population Variance
+  variance = m2/(n-1);     // (n-1):Sample Variance  (n): Population Variance
   stdev = sqrt(variance);  // Calculate standard deviation
 
   double datAvg = (1.0*datSum)/n;
@@ -95,8 +86,8 @@ void loop() {
     tDrift = datAvg - firstRead;
   }
   Serial.print(datAvg,7);      Serial.print(", ");
-  Serial.print(stdev*1E6,1);       Serial.print(", ");
-  Serial.print(pk*1E6,1);       Serial.print(", ");
+  Serial.print(stdev*1E6,1);   Serial.print(", ");
+  Serial.print(pk*1E6,1);      Serial.print(", ");
   Serial.print(tDrift*1E6,1);  // units of uV
   Serial.println();
   
