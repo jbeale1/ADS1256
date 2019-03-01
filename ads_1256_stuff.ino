@@ -15,10 +15,7 @@ void initADS() {
   //let the system power up and stabilize (datasheet pg 24)
   delay(1000);
   //this enables the buffer which gets us more accurate voltage readings
- // SetRegisterValue(STATUS,B00110010);
-
-  //Serial.print("Status Reg:");
-  //Serial.println(GetRegisterValue(STATUS));
+  SetRegisterValue(STATUS,B00110010);
 
   //next set the mux register
   //we are only trying to read differential values from pins 0 and 1. your needs may vary.
@@ -32,18 +29,10 @@ void initADS() {
   SetRegisterValue(ADCON, PGA_1); //set the adcon register
 
   // SetRegisterValue(DRATE, DR_30000); //set the drate register
-  // SetRegisterValue(DRATE, DR_7500); //set the drate register
-  // SetRegisterValue(DRATE, DR_1000); //set the drate register
   SetRegisterValue(DRATE, DR2_5); //set the drate register
-  // SetRegisterValue(DRATE, DR_15); //set the drate register
 
-  //we're going to ignore the GPIO for now...
-  //lastly, we need to calibrate the system
+  delay(3000);  // settling time <2 seconds: first few readings have offset
 
-  //let it settle
-  delay(3000);  // if less than 2 seconds, first few readings have offset
-
-  //then do calibration
   SendCMD(SELFCAL); //send the calibration command
 
   delay(1);
@@ -159,7 +148,6 @@ void SetRegisterValue(uint8_t regAdress, uint8_t regValue) {
 
   uint8_t regValuePre = GetRegisterValue(regAdress);
   if (regValue != regValuePre) {
-    //digitalWrite(_START, HIGH);
     delayMicroseconds(10);
     waitforDRDY();
     SPI.beginTransaction(SPISettings(SPI_SPEED, MSBFIRST, SPI_MODE1)); // initialize SPI with SPI_SPEED, MSB first, SPI Mode1
@@ -170,17 +158,16 @@ void SetRegisterValue(uint8_t regAdress, uint8_t regValue) {
     SPI.transfer(regValue);         // write data (1 Byte) for the register
     delayMicroseconds(10);
     digitalWriteFast(21, HIGH);
-    //digitalWrite(_START, LOW);
-    if (regValue != GetRegisterValue(regAdress)) {   //Check if write was succesfull
-      Serial.print("Write to Register 0x");
+
+    // problem with readback is STATUS reg changes with read-only bit0 (DRDY/ status)
+/*
+    if (regValue != GetRegisterValue(regAdress)) {   //Check if write was succesful
+      Serial.print("Readback of Register 0x");
       Serial.print(regAdress, HEX);
-      Serial.println(" failed!");
+      Serial.println(" different from commanded value!");
     }
-    else {
-      // Serial.println("success");
-    }
+    */
     SPI.endTransaction();
 
   }
-
 }
