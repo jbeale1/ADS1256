@@ -5,8 +5,9 @@ Sample output from code measuring voltage of one NiCd AA battery.  Differential 
 Each line combines 25 samples (10 sec at 2.5 Hz), last three columns in units of microvolts.
 Pretty good performance from a $20 ADS1256 breakout board from Ebay.
 
+<pre>
 Time,         Volts,    stdev, pk-pk, drift
-# Offset Cal: -1434, Fullscale Cal: 3091162
+Offset Cal: -1434, Fullscale Cal: 3091162
 21:18:37.152, 1.3213073, 1.7, 6.5, 0.0
 21:18:47.156, 1.3213095, 1.1, 4.2, 2.2
 21:18:57.148, 1.3213062, 2.2, 8.3, -1.1
@@ -23,3 +24,4 @@ Time,         Volts,    stdev, pk-pk, drift
 21:20:47.153, 1.3213060, 2.2, 7.1, -1.3
 21:20:57.135, 1.3213051, 1.0, 3.6, -2.2
 21:21:07.155, 1.3213030, 2.3, 8.9, -4.3
+</pre>
