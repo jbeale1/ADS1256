@@ -1,11 +1,12 @@
 # ADS1256
-fork of Matt Bilsky's code for ADS1256 on Arduino
-
-Sample output from code measuring voltage of one NiCd AA battery.  Differential mode, buffer on, PGA gain = 1
-Each line combines 25 samples (10 sec at 2.5 Hz), last three columns in units of microvolts.
-Pretty good performance from a $20 ADS1256 breakout board from Ebay.
+This is a fork of Matt Bilsky's code for ADS1256 on Teensy/Arduino https://github.com/mbilsky/TeensyADS1256. I made only minor changes: the main loop calculates standard deviation and pk-pk values of sets of readings, and also tracks long-term drift relative to the first reading.
 
 <pre>
+Below is sample output from this code, measuring voltage on one NiCd AA battery at around 1.32 V.
+This is in differential mode with buffer on, PGA gain = 1
+Each line combines 25 samples (10 sec at 2.5 Hz). The last three columns in units of microvolts.
+Pretty good performance from a $20 ADS1256 breakout board from Ebay.
+
 Time,         Volts,    stdev, pk-pk, drift
 Offset Cal: -1434, Fullscale Cal: 3091162
 21:18:37.152, 1.3213073, 1.7, 6.5, 0.0
