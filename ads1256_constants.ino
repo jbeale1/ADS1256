@@ -1,6 +1,7 @@
 // using the definitions in this library: https://github.com/Flydroid/ADS12xx-Library
 
-#define SPI_SPEED 2500000
+// In continuous read mode, 1.5 MHz clock had rare read errors. 1.2 MHz worked OK
+#define SPI_SPEED 1200000  
 
 /* ADS1248 Register (see p42 for Register Map) */
 #define    STATUS    0x00 //Status Control Register 0
