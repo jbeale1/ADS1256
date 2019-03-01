@@ -107,14 +107,14 @@ void DRDY_Interrupt() {
 
 long GetRegisterValue(uint8_t regAdress) {
   uint8_t bufr;
-  digitalWriteFast(21, LOW);
+  digitalWriteFast(ADS_CS_PIN, LOW);
   delayMicroseconds(10);
   SPI.transfer(RREG | regAdress); // send 1st command byte, address of the register
   SPI.transfer(0x00);     // send 2nd command byte, read only one register
   delayMicroseconds(10);
   bufr = SPI.transfer(NOP); // read data of the register
   delayMicroseconds(10);
-  digitalWriteFast(21, HIGH);
+  digitalWriteFast(ADS_CS_PIN, HIGH);
   //digitalWrite(_START, LOW);
   SPI.endTransaction();
   return bufr;
@@ -124,23 +124,23 @@ long GetRegisterValue(uint8_t regAdress) {
 void SendCMD(uint8_t cmd) {
   waitforDRDY();
   SPI.beginTransaction(SPISettings(SPI_SPEED, MSBFIRST, SPI_MODE1)); // initialize SPI with 4Mhz clock, MSB first, SPI Mode0
-  digitalWriteFast(21, LOW);
+  digitalWriteFast(ADS_CS_PIN, LOW);
   delayMicroseconds(10);
   SPI.transfer(cmd);
   delayMicroseconds(10);
-  digitalWriteFast(21, HIGH);
+  digitalWriteFast(ADS_CS_PIN, HIGH);
   SPI.endTransaction();
 }
 
 void Reset() {
   SPI.beginTransaction(SPISettings(SPI_SPEED, MSBFIRST, SPI_MODE1)); // initialize SPI with  clock, MSB first, SPI Mode1
-  digitalWriteFast(21, LOW);
+  digitalWriteFast(ADS_CS_PIN, LOW);
   delayMicroseconds(10);
   SPI.transfer(RESET); //Reset
   delay(2); //Minimum 0.6ms required for Reset to finish.
   SPI.transfer(SDATAC); //Issue SDATAC
   delayMicroseconds(100);
-  digitalWriteFast(21, HIGH);
+  digitalWriteFast(ADS_CS_PIN, HIGH);
   SPI.endTransaction();
 }
 
@@ -151,13 +151,13 @@ void SetRegisterValue(uint8_t regAdress, uint8_t regValue) {
     delayMicroseconds(10);
     waitforDRDY();
     SPI.beginTransaction(SPISettings(SPI_SPEED, MSBFIRST, SPI_MODE1)); // initialize SPI with SPI_SPEED, MSB first, SPI Mode1
-    digitalWriteFast(21, LOW);
+    digitalWriteFast(ADS_CS_PIN, LOW);
     delayMicroseconds(10);
     SPI.transfer(WREG | regAdress); // send 1st command byte, address of the register
     SPI.transfer(0x00);   // send 2nd command byte, write only one register
     SPI.transfer(regValue);         // write data (1 Byte) for the register
     delayMicroseconds(10);
-    digitalWriteFast(21, HIGH);
+    digitalWriteFast(ADS_CS_PIN, HIGH);
 
     // problem with readback is STATUS reg changes with read-only bit0 (DRDY/ status)
 /*
